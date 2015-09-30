@@ -255,6 +255,92 @@ bool orb::importKeypoints(const string& in, bool isBinary)
 
 int orb::checkNumKp(const string& in, bool isBinary)
 {
+	int ret_num_kp = 0;
+
+    if(check_file_exist && !is_path_exist(in)) // no exist
+    {
+        cout << "File \"" << in << "\" not found" << endl;
+		return 0;   // interpret as no keypoint
+    }
+
+    // Oxford format
+	if(isBinary)
+	{
+		ifstream InFile (in.c_str(), ios::binary);
+		if (InFile)
+		{
+            int dim;
+		    /// Create buffer
+            size_t buffer_size = sizeof(width) + sizeof(height) + sizeof(dim) + sizeof(ret_num_kp);
+            char* buffer = new char[buffer_size];
+            char* buffer_ptr = buffer;
+
+		    // Read whole file into buffer
+		    InFile.read(buffer, buffer_size);
+
+            InFile.seekg(0, InFile.end);
+            size_t file_size = InFile.tellg();
+
+			// Close file
+			InFile.close();
+
+			/// Interpret from buffer
+			// Read width
+            width = *((int*)buffer_ptr);
+            buffer_ptr += sizeof(width);
+
+            // Read height
+            height = *((int*)buffer_ptr);
+            buffer_ptr += sizeof(height);
+
+			// Read dim
+            dim = *((int*)buffer_ptr);
+            buffer_ptr += sizeof(dim);
+
+			// Read ret_num_kp
+            ret_num_kp = *((int*)buffer_ptr);
+            buffer_ptr += sizeof(ret_num_kp);
+
+            size_t actual_filesize = sizeof(width) + sizeof(height) + sizeof(dim) + sizeof(ret_num_kp) + (ret_num_kp * (HEADSIZE * sizeof(float) + dim * sizeof(float)));
+            if (actual_filesize != file_size)
+            {
+				cout << "Feature file [" << in << "] is corrupted: expect(" << actual_filesize << ") != actual(" << file_size << ") " << endl;
+				exit(EXIT_FAILURE);
+            }
+            else
+            // Stop reading the rest
+
+			// Release buffer
+			delete[] buffer;
+		}
+	}
+	else
+	{
+        cout << "No implementation for reading feature text file" << endl;
+        exit(EXIT_FAILURE);
+        /*
+        ofstream InFile (in.c_str());
+        if (InFile)
+        {
+            InFile << D << endl;
+            InFile << num_kp << endl;
+
+            for(size_t kpIdx = 0; kpIdx < kp.size(); kpIdx++)
+            {
+                InFile << kp[kpIdx][0] << " " << kp[kpIdx][1] << " " << kp[kpIdx][2] << " " << kp[kpIdx][3] << " " << kp[kpIdx][4] << " ";
+                for(size_t descIdx = 0; descIdx < desc[kpIdx].size(); descIdx++)
+                    InFile << desc[kpIdx][descIdx] << " ";
+                InFile << endl;
+            }
+
+            InFile.close();
+        }
+        */
+	}
+
+    // Keep num_kp
+    num_kp = ret_num_kp;
+	return ret_num_kp; // num_kp
 }
 
 int orb::extract(const string& imgPath)
