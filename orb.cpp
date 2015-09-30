@@ -28,9 +28,9 @@ using namespace std;
 using namespace cv;
 using namespace alphautils;
 
-orb::orb(bool isNormalize, bool isCheckFile)
+orb::orb(int Colorspace, bool isNormalizePt, bool isCheckFile)
 {
-    init(isNormalize, isCheckFile);
+    init(Colorspace, isNormalizePt, isCheckFile);
 }
 
 orb::~orb(void)
@@ -38,9 +38,9 @@ orb::~orb(void)
 	reset();
 }
 
-void orb::init(bool isNormalize, bool isCheckFile)
+void orb::init(int Colorspace, bool isNormalizePt, bool isCheckFile)
 {
-	normalize_pt = isNormalize;
+	normalize_pt = isNormalizePt;
 	check_file_exist = isCheckFile;
 	num_kp = 0;
 	has_kp = false;
@@ -345,10 +345,145 @@ int orb::checkNumKp(const string& in, bool isBinary)
 
 int orb::extract(const string& imgPath)
 {
+	Mat tmp = imread(imgPath);
+	num_kp = extract(tmp);
+	tmp.release();
+
+	return num_kp;
 }
 
-int orb::extract(const Mat& img)
-{
+int orb::extract(const Mat& imgMat)
+{	
+	reset();
+
+	//Mat imgMat = imread(image_filename);
+	Mat image(imgMat.rows, imgMat.cols, CV_32FC1, Scalar(0)); // float 1 channel
+
+	float *out = image.ptr<float>(0);
+
+    // Make gray scale by (b+g+r)/3
+    if (colorspace == RGB_SPACE)
+    {
+        const uchar *in = imgMat.ptr<uchar>(0);
+        for (size_t i = imgMat.rows * imgMat.cols; i > 0; i--)
+        {
+            *out = (float(in[0]) + in[1] + in[2]) / 3.0f;
+            out++;
+            in += 3;
+        }
+    }
+    // Make gray scale by (0.2989 * R) + (0.5870 * G) + (0.1140 * B)
+    // http://docs.opencv.org/modules/imgproc/doc/miscellaneous_transformations.html
+    else if (colorspace == IRGB_SPACE)
+    {
+        //Mat tmp_gray(imgMat.rows, imgMat.cols, CV_8UC1, Scalar(0));
+        //cvtColor(imgMat, tmp_gray, CV_BGR2GRAY);
+        const uchar *in = imgMat.ptr<uchar>(0);
+        //const uchar *in = tmp_gray.ptr<uchar>(0);
+        for (size_t i = imgMat.rows * imgMat.cols; i > 0; i--)
+        {
+            *out = 0.2989f * in[2] + 0.5870f * in[1] + 0.1140f * in[0];
+            //*out = float(in[0]);
+            out++;
+            in += 3;
+            //in++;
+        }
+    }
+    // Make gray from L channel from OpenCV Lab
+    else
+    {
+        //Convert BGR to LAB
+        Mat tmp_lab(imgMat.rows, imgMat.cols, CV_8UC3, Scalar(0, 0, 0));
+        cvtColor(imgMat, tmp_lab, CV_BGR2Lab);
+        const uchar *in = tmp_lab.ptr<uchar>(0);
+        for (size_t i = imgMat.rows * imgMat.cols; i > 0; i--)
+        {
+            *out = float(in[0]);
+            //uchar Lv, av, bv;
+            //rgb2lab(in[0], in[1], in[2], Lv, av, bv);
+            //*out = float(Lv);
+            out++;
+            in += 3;
+        }
+    }
+	
+	// Main ORB stage
+	vector<KeyPoint> cv_keypoints;
+	Mat cv_descriptors;
+	
+	ORB* orb_obj = new ORB(
+    nfeatures,
+    scaleFactor,
+    nlevels,
+    edgeThreshold,
+    firstLevel,
+    WTA_K,
+    scoreType,
+    patchSize );
+	
+	// ORB keypoint extraction
+	orb_obj->detect(image, cv_keypoints);
+	// ORB feature description
+	orb_obj->compute(image, cv_keypoints, cv_descriptors);
+
+    // Get width and height
+    width = imgMat.cols;
+    height = imgMat.rows;
+
+	/*
+	 *	public KeyPoint(float x,
+		float y,
+		float _size,
+		float _angle)
+	 */
+	// Keep all data for INS
+	num_kp = cv_keypoints.size();
+	
+	// Get descriptor ptr only once
+	//uchar* cv_descriptors_ptr = cv_descriptors.ptr<uchar>(0);
+	uchar* cv_descriptors_ptr = (uchar*)cv_descriptors.data;
+	for (int kp_idx = 0; kp_idx < num_kp; kp_idx++)
+	{
+		kp.push_back(new float[HEADSIZE]);
+		desc.push_back(new float[D]);
+		float* curr_kp = kp.back();
+		float* curr_desc = desc.back();
+		
+		// Keypoints
+		// Point normalization to 0-1 scale
+		if (normalize_pt)
+		{
+			curr_kp[0] = float(cv_keypoints[kp_idx].pt.x / width);	// x
+			curr_kp[1] = float(cv_keypoints[kp_idx].pt.y / height);// y
+		}
+		else
+		{
+			curr_kp[0] = float(cv_keypoints[kp_idx].pt.x);			// x
+            curr_kp[1] = float(cv_keypoints[kp_idx].pt.y);			// y
+		}
+		curr_kp[2] = float(cv_keypoints[kp_idx].size);			// a
+		curr_kp[3] = float(cv_keypoints[kp_idx].angle);			// b
+		curr_kp[4] = 0.0f;										// c
+		
+		// Descriptors
+		for (int byte_idx = 0; byte_idx < ORB_BYTE; byte_idx++)		// 0-31
+		{
+			for (int bit_idx = 0; bit_idx < BIT_PER_BYTE; bit_idx++)	// 0-7
+				// Copying each of D-bit to each of descriptor dimension.
+				curr_desc[(byte_idx * BIT_PER_BYTE) + bit_idx] = cv_descriptors_ptr[kp_idx * D + ((byte_idx * BIT_PER_BYTE) + bit_idx)];
+		}
+	}
+	
+
+    // Flag memory allocated
+    has_kp = true;
+    has_desc = true;
+	
+	// Release memory
+	delete orb_obj;
+	cv_descriptors.release();
+
+    return num_kp;
 }
 
 // Unlink function is used for giving the right (a flag)
