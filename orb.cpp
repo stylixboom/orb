@@ -129,6 +129,7 @@ void orb::exportKeypoints(const string& out, bool isBinary)
 
             for(int kp_idx = 0; kp_idx < num_kp; kp_idx++)
             {
+				// x y a b c
                 OutFile << kp[kp_idx][0] << " " << kp[kp_idx][1] << " " << kp[kp_idx][2] << " " << kp[kp_idx][3] << " " << kp[kp_idx][4] << " ";
                 for(size_t desc_pos = 0; desc_pos < D; desc_pos++)
                     OutFile << desc[kp_idx][desc_pos] << " ";
@@ -468,9 +469,13 @@ int orb::extract(const Mat& imgMat)
 		// Descriptors
 		for (int byte_idx = 0; byte_idx < ORB_BYTE; byte_idx++)		// 0-31
 		{
-			for (int bit_idx = 0; bit_idx < BIT_PER_BYTE; bit_idx++)	// 0-7
+			int full_bit_idx;
+			for (int sub_bit_idx = 0; sub_bit_idx < BIT_PER_BYTE; sub_bit_idx++)	// 0-7
+			{
+				full_bit_idx = (byte_idx * BIT_PER_BYTE) + sub_bit_idx;
 				// Copying each of D-bit to each of descriptor dimension.
-				curr_desc[(byte_idx * BIT_PER_BYTE) + bit_idx] = cv_descriptors_ptr[kp_idx * D + ((byte_idx * BIT_PER_BYTE) + bit_idx)];
+				curr_desc[full_bit_idx] = cv_descriptors_ptr[kp_idx * D + full_bit_idx];				
+			}
 		}
 	}
 	
