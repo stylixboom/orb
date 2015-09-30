@@ -7,8 +7,10 @@
  *      Author: Siriwat Kasamwattanarote
  */
 #pragma once
- 
-#define D 128
+
+#define ORB_BYTE 32
+#define BIT_PER_BYTE 8
+#define D ORB_BYTE*BIT_PER_BYTE	// 256 bits
 #define HEADSIZE 5
 
 using namespace std;
@@ -16,18 +18,35 @@ using namespace cv;
 
 class orb
 {
-    bool check_file_exist;
-		
-    bool normalize_pt;
+	// Default parameters of ORB
+	int nfeatures=500;			// 900
+	float scaleFactor=1.2f;		// 4
+	int nlevels=8;				//
+	int edgeThreshold=15; // Changed default (31);
+	int firstLevel=0;
+	int WTA_K=2;
+	int scoreType=ORB::HARRIS_SCORE;
+	int patchSize=31;
+	//int fastThreshold=20;
+	
+	bool check_file_exist;
+	
+	int colorspace;
+	bool normalize_pt;
+	
+	// Color space
+	const static int RGB_SPACE = 10;
+	const static int IRGB_SPACE = 11;
+	const static int LAB_SPACE = 12;
 
-    // Memory management flag
-    bool has_kp;
-    bool has_desc;
+	// Memory management flag
+	bool has_kp;
+	bool has_desc;
 
 public:
-	orb(bool isNormalize = false, bool isCheckFile = true);
+	orb(int Colorspace = RGB_SPACE, bool isNormalizePt = false, bool isCheckFile = true);
 	~orb(void);
-	void init(bool isNormalize = false, bool isCheckFile = true);
+	void init(int Colorspace = RGB_SPACE, bool isNormalizePt = false, bool isCheckFile = true);
 	static int GetORBD() { return D; };
 	static int GetORBHeadSize() { return HEADSIZE; };
 
