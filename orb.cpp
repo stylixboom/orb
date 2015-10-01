@@ -473,8 +473,8 @@ int orb::extract(const Mat& imgMat)
 			for (int sub_bit_idx = 0; sub_bit_idx < BIT_PER_BYTE; sub_bit_idx++)	// 0-7
 			{
 				full_bit_idx = (byte_idx * BIT_PER_BYTE) + sub_bit_idx;
-				// Copying each of D-bit to each of descriptor dimension.
-				curr_desc[full_bit_idx] = cv_descriptors_ptr[kp_idx * D + full_bit_idx];				
+				// Copying each of D-bit to each of a descriptor dimension.
+				curr_desc[full_bit_idx] = cv_descriptors_ptr[kp_idx * D + full_bit_idx];
 			}
 		}
 	}
