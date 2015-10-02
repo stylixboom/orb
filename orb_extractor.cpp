@@ -14,13 +14,15 @@
 #include <unistd.h> // usleep
 #include <sys/types.h> // for checking exist file and dir
 #include <sys/stat.h>
+
+// Siriwat's header
 #include "../alphautils/alphautils.h"
-//#include "../alphautils/imtools.h"
+#include "../alphautils/imtools.h"
 #include "orb.h"
 
 using namespace std;
 using namespace alphautils;
-//using namespace alphautils::imtools;
+using namespace alphautils::imtools;
 
 void readme(const string& exe_name)
 {
@@ -42,7 +44,7 @@ int main(int argc,char *argv[])
 	bool isBinary = false;
 	int colorspace = RGB_SPACE;
 	bool normpoint = true;
-	bool draw_mode = DRAW_CIRCLE;
+	bool draw_mode = DRAW_POINT;
 
 	if(argc > 2)
 	{
@@ -109,7 +111,7 @@ int main(int argc,char *argv[])
         for(int kp_idx = 0; kp_idx < feature_display.num_kp; kp_idx++)
         {
             cout << feature_display.kp[kp_idx][0] << " " << feature_display.kp[kp_idx][1] << " " << feature_display.kp[kp_idx][2] << " " << feature_display.kp[kp_idx][3] << " " << feature_display.kp[kp_idx][4] << " ";
-            for(size_t desc_pos = 0; desc_pos < D; desc_pos++)
+            for(size_t desc_pos = 0; desc_pos < ORB_D; desc_pos++)
                 cout << feature_display.desc[kp_idx][desc_pos] << " ";
             cout << endl;
         }
@@ -150,7 +152,7 @@ int main(int argc,char *argv[])
 	{
         cout << "Drawing ORB overlay...";
         cout.flush();
-        //draw_features(input_image, output_overlay_image, output_feature, draw_mode);
+		orb_obj.draw_feats(input_image, output_overlay_image, output_feature, draw_mode);
         cout << "done" << endl;
     }
 
