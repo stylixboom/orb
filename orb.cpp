@@ -21,12 +21,14 @@
 
 // Siriwat's header
 #include "../alphautils/alphautils.h"
+#include "../alphautils/imtools.h"
 
 #include "orb.h"
 
 using namespace std;
 using namespace cv;
 using namespace alphautils;
+using namespace alphautils::imtools;
 
 orb::orb(int Colorspace, bool isNormalizePt, bool isCheckFile)
 {
@@ -61,7 +63,7 @@ void orb::exportKeypoints(const string& out, bool isBinary)
 		{
 		    /// Prepare buffer
 		    size_t buffer_size = sizeof(int) * 4 + 											// Header size
-                                 num_kp * (HEADSIZE * sizeof(float) + D * sizeof(float));	// Data size
+                                 num_kp * (ORB_HEADSIZE * sizeof(float) + ORB_D * sizeof(float));	// Data size
                                  // sizeof(width) + sizeof(height) + sizeof(dim) + sizeof(num_kp) +
                                  // num_kp * (HEADSIZE * sizeof(kp) + D * sizeof(desc))
             char* buffer = new char[buffer_size];
@@ -77,7 +79,7 @@ void orb::exportKeypoints(const string& out, bool isBinary)
             buffer_ptr += sizeof(int);
 
 			// Put dim
-            *((int*)buffer_ptr) = D;
+            *((int*)buffer_ptr) = ORB_D;
             buffer_ptr += sizeof(int);
 
 			// Put num_kp
@@ -100,7 +102,7 @@ void orb::exportKeypoints(const string& out, bool isBinary)
                 buffer_ptr += sizeof(float);
 
 				// Put data (e.g. 128D)
-				for (int desc_idx = 0; desc_idx < D; desc_idx++)
+				for (int desc_idx = 0; desc_idx < ORB_D; desc_idx++)
                 {
                     *((float*)buffer_ptr) = desc[kp_idx][desc_idx];
                     buffer_ptr += sizeof(float);
@@ -124,14 +126,14 @@ void orb::exportKeypoints(const string& out, bool isBinary)
         {
             OutFile << width << endl;
             OutFile << height << endl;
-            OutFile << D << endl;
+            OutFile << ORB_D << endl;
             OutFile << num_kp << endl;
 
             for(int kp_idx = 0; kp_idx < num_kp; kp_idx++)
             {
 				// x y a b c
                 OutFile << kp[kp_idx][0] << " " << kp[kp_idx][1] << " " << kp[kp_idx][2] << " " << kp[kp_idx][3] << " " << kp[kp_idx][4] << " ";
-                for(size_t desc_pos = 0; desc_pos < D; desc_pos++)
+                for(size_t desc_pos = 0; desc_pos < ORB_D; desc_pos++)
                     OutFile << desc[kp_idx][desc_pos] << " ";
                 OutFile << endl;
             }
@@ -190,7 +192,7 @@ bool orb::importKeypoints(const string& in, bool isBinary)
             num_kp = *((int*)buffer_ptr);
             buffer_ptr += sizeof(num_kp);
 
-            size_t actual_filesize = sizeof(width) + sizeof(height) + sizeof(dim) + sizeof(num_kp) + (num_kp * (HEADSIZE * sizeof(float) + dim * sizeof(float)));
+            size_t actual_filesize = sizeof(width) + sizeof(height) + sizeof(dim) + sizeof(num_kp) + (num_kp * (ORB_HEADSIZE * sizeof(float) + dim * sizeof(float)));
             if (actual_filesize != buffer_size)
             {
                 cout << "Feature file [" << in << "] is corrupted" << endl;
@@ -201,8 +203,8 @@ bool orb::importKeypoints(const string& in, bool isBinary)
 			for (int kp_idx = 0; kp_idx < num_kp; kp_idx++)
 			{
 				// Read header "x y a b c"
-                float* read_kp = new float[HEADSIZE];
-				for(int head_pos = 0; head_pos < HEADSIZE; head_pos++)
+                float* read_kp = new float[ORB_HEADSIZE];
+				for(int head_pos = 0; head_pos < ORB_HEADSIZE; head_pos++)
                 {
                     read_kp[head_pos] = *((float*)buffer_ptr);
                     buffer_ptr += sizeof(read_kp[head_pos]);
@@ -302,7 +304,7 @@ int orb::checkNumKp(const string& in, bool isBinary)
             ret_num_kp = *((int*)buffer_ptr);
             buffer_ptr += sizeof(ret_num_kp);
 
-            size_t actual_filesize = sizeof(width) + sizeof(height) + sizeof(dim) + sizeof(ret_num_kp) + (ret_num_kp * (HEADSIZE * sizeof(float) + dim * sizeof(float)));
+            size_t actual_filesize = sizeof(width) + sizeof(height) + sizeof(dim) + sizeof(ret_num_kp) + (ret_num_kp * (ORB_HEADSIZE * sizeof(float) + dim * sizeof(float)));
             if (actual_filesize != file_size)
             {
 				cout << "Feature file [" << in << "] is corrupted: expect(" << actual_filesize << ") != actual(" << file_size << ") " << endl;
@@ -445,8 +447,8 @@ int orb::extract(const Mat& imgMat)
 	uchar* cv_descriptors_ptr = (uchar*)cv_descriptors.data;
 	for (int kp_idx = 0; kp_idx < num_kp; kp_idx++)
 	{
-		kp.push_back(new float[HEADSIZE]);
-		desc.push_back(new float[D]);
+		kp.push_back(new float[ORB_HEADSIZE]);
+		desc.push_back(new float[ORB_D]);
 		float* curr_kp = kp.back();
 		float* curr_desc = desc.back();
 		
@@ -462,9 +464,9 @@ int orb::extract(const Mat& imgMat)
 			curr_kp[0] = float(cv_keypoints[kp_idx].pt.x);			// x
             curr_kp[1] = float(cv_keypoints[kp_idx].pt.y);			// y
 		}
-		curr_kp[2] = float(cv_keypoints[kp_idx].size);			// a
-		curr_kp[3] = float(cv_keypoints[kp_idx].angle);			// b
-		curr_kp[4] = 0.0f;										// c
+		curr_kp[2] = float(cv_keypoints[kp_idx].size);			// a = size
+		curr_kp[3] = float(cv_keypoints[kp_idx].angle);			// b = angle
+		curr_kp[4] = 0.0f;										// c (ignore)
 		
 		// Descriptors
 		for (int byte_idx = 0; byte_idx < ORB_BYTE; byte_idx++)		// 0-31
@@ -474,7 +476,7 @@ int orb::extract(const Mat& imgMat)
 			{
 				full_bit_idx = (byte_idx * BIT_PER_BYTE) + sub_bit_idx;
 				// Copying each of D-bit to each of a descriptor dimension.
-				curr_desc[full_bit_idx] = cv_descriptors_ptr[kp_idx * D + full_bit_idx];
+				curr_desc[full_bit_idx] = cv_descriptors_ptr[kp_idx * ORB_D + full_bit_idx];
 			}
 		}
 	}
@@ -520,5 +522,69 @@ void orb::reset(void)
 
 		num_kp = 0;
 	}
+}
+
+// Feature drawing generic
+void orb::draw_feats(const string& in_img_path, const string& out_img_path, const string& feat_path, int draw_mode, int colorspace, bool normpoint, bool binary)
+{
+	Mat in_img = imread(in_img_path.c_str());
+
+	draw_feats(in_img, feat_path, draw_mode, colorspace, normpoint, binary);
+
+	imwrite(out_img_path.c_str(), in_img);
+}
+
+void orb::draw_feats(const string& in_img_path, const string& out_img_path, const vector<INS_KP>& in_keypoints, int draw_mode, int colorspace, bool normpoint)
+{
+	Mat in_img = imread(in_img_path.c_str());
+
+	for (size_t kp_idx = 0; kp_idx < in_keypoints.size(); kp_idx++)
+		draw_a_feat(in_img, in_keypoints[kp_idx], draw_mode, normpoint);
+
+	imwrite(out_img_path.c_str(), in_img);
+}
+
+void orb::draw_feats(Mat& in_img, const string& feat_path, int draw_mode, int colorspace, bool normpoint, bool binary)
+{
+	if (str_contains(feat_path, "orb"))
+	{
+		orb orb_reader(colorspace, normpoint);
+		orb_reader.importKeypoints(feat_path, binary);
+		int num_kp = orb_reader.num_kp;
+	
+		for (int kp_idx = 0; kp_idx < num_kp; kp_idx++)
+		{
+			INS_KP curr_kp = {orb_reader.kp[kp_idx][0], orb_reader.kp[kp_idx][1], orb_reader.kp[kp_idx][2], orb_reader.kp[kp_idx][3], orb_reader.kp[kp_idx][4]};
+
+			draw_a_feat(in_img, curr_kp, draw_mode, normpoint);
+		}
+	}
+}
+
+float orb::draw_a_feat(Mat& in_img, INS_KP in_keypoint, int draw_mode, bool normpoint)
+{
+	float ret_raw_degree = 0.0f;
+
+	Point2f center(in_keypoint.x, in_keypoint.y);             // x, y
+	if (normpoint)
+	{
+		center.x *= in_img.cols;
+		center.y *= in_img.rows;
+	}
+
+	if (draw_mode == DRAW_POINT)
+	{
+		// void circle(Mat& in_img, Point center, int radius, const Scalar& color, int thickness=1, int lineType=8, int shift=0)
+		circle(in_img, center, 0, Scalar(0, 255, 0), 2, CV_AA);	// Point
+	}
+	else if (draw_mode == DRAW_CIRCLE)
+	{
+		// void circle(Mat& in_img, Point center, int radius, const Scalar& color, int thickness=1, int lineType=8, int shift=0)				
+		if (in_keypoint.c == 0.0f)	// ORB has only a(size), b(angle)
+			circle(in_img, center, in_keypoint.a, Scalar(0, 255, 0), 2, CV_AA);	// Circle
+		circle(in_img, center, 0, Scalar(0, 255, 0), 2, CV_AA);	// Point
+	}
+
+	return ret_raw_degree;
 }
 //;)
