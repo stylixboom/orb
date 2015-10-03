@@ -5,8 +5,8 @@
 ## Release
 ProjectName            :=orb
 ConfigurationName      :=Release
-WorkspacePath          := "/home/stylix/Dropbox/MyDocument/SokendaiCourse/Researches/Workspace/code"
-ProjectPath            := "/home/stylix/Dropbox/MyDocument/SokendaiCourse/Researches/Workspace/code/lib/orb"
+WorkspacePath          := "${HOME}/webstylix/code"
+ProjectPath            := "${HOME}/webstylix/code/lib/orb"
 IntermediateDirectory  :=./Release
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
@@ -14,7 +14,7 @@ CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Siriwat Kasamwattanarote
 Date                   :=03/10/15
-CodeLitePath           :="/home/stylix/Dropbox/MyDocument/SokendaiCourse/Researches/Workspace/configurations/.codelite"
+CodeLitePath           :="${HOME}/webstylix/configurations/.codelite"
 LinkerName             :=g++
 SharedObjectLinkerName :=g++ -shared -fPIC
 ObjectSuffix           :=.o
@@ -36,12 +36,12 @@ ObjectsFileList        :="orb.txt"
 PCHCompileFlags        :=
 MakeDirCommand         :=mkdir -p
 LinkOptions            :=  
-IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch)/home/stylix/local/include 
+IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch)${HOME}/local/include 
 IncludePCH             := 
 RcIncludePath          := 
 Libs                   := 
 ArLibs                 :=  
-LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)/home/stylix/local/lib 
+LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)${HOME}/local/lib 
 
 ##
 ## Common variables
@@ -77,8 +77,8 @@ $(OutputFile): $(Objects)
 	@echo "" > $(IntermediateDirectory)/.d
 	@echo $(Objects0)  > $(ObjectsFileList)
 	$(AR) $(ArchiveOutputSwitch)$(OutputFile) @$(ObjectsFileList) $(ArLibs)
-	@$(MakeDirCommand) "/home/stylix/Dropbox/MyDocument/SokendaiCourse/Researches/Workspace/code/.build-release"
-	@echo rebuilt > "/home/stylix/Dropbox/MyDocument/SokendaiCourse/Researches/Workspace/code/.build-release/orb"
+	@$(MakeDirCommand) "${HOME}/webstylix/code/.build-release"
+	@echo rebuilt > "${HOME}/webstylix/code/.build-release/orb"
 
 MakeIntermediateDirs:
 	@test -d ./Release || $(MakeDirCommand) ./Release
@@ -94,7 +94,7 @@ PreBuild:
 ## Objects
 ##
 $(IntermediateDirectory)/orb.cpp$(ObjectSuffix): orb.cpp $(IntermediateDirectory)/orb.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/stylix/Dropbox/MyDocument/SokendaiCourse/Researches/Workspace/code/lib/orb/orb.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/orb.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "orb.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/orb.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/orb.cpp$(DependSuffix): orb.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/orb.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/orb.cpp$(DependSuffix) -MM "orb.cpp"
 

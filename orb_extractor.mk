@@ -5,8 +5,8 @@
 ## Release
 ProjectName            :=orb_extractor
 ConfigurationName      :=Release
-WorkspacePath          := "/home/stylix/Dropbox/MyDocument/SokendaiCourse/Researches/Workspace/code"
-ProjectPath            := "/home/stylix/Dropbox/MyDocument/SokendaiCourse/Researches/Workspace/code/lib/orb"
+WorkspacePath          := "${HOME}/webstylix/code"
+ProjectPath            := "${HOME}/webstylix/code/lib/orb"
 IntermediateDirectory  :=./Release
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
@@ -14,7 +14,7 @@ CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Siriwat Kasamwattanarote
 Date                   :=03/10/15
-CodeLitePath           :="/home/stylix/Dropbox/MyDocument/SokendaiCourse/Researches/Workspace/configurations/.codelite"
+CodeLitePath           :="${HOME}/webstylix/configurations/.codelite"
 LinkerName             :=g++
 SharedObjectLinkerName :=g++ -shared -fPIC
 ObjectSuffix           :=.o
@@ -36,12 +36,12 @@ ObjectsFileList        :="orb_extractor.txt"
 PCHCompileFlags        :=
 MakeDirCommand         :=mkdir -p
 LinkOptions            :=  `pkg-config opencv --libs`
-IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch)/home/stylix/local/include 
+IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch)${HOME}/local/include 
 IncludePCH             := 
 RcIncludePath          := 
 Libs                   := $(LibrarySwitch)orb $(LibrarySwitch)alphautils $(LibrarySwitch)opencv_core $(LibrarySwitch)opencv_features2d $(LibrarySwitch)opencv_highgui 
 ArLibs                 :=  "liborb.a" "libalphautils.a" "opencv_core" "opencv_features2d" "opencv_highgui" 
-LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)/home/stylix/local/lib $(LibraryPathSwitch)../alphautils/$(ConfigurationName) $(LibraryPathSwitch)./$(ConfigurationName) 
+LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)${HOME}/local/lib $(LibraryPathSwitch)../alphautils/$(ConfigurationName) $(LibraryPathSwitch)./$(ConfigurationName) 
 
 ##
 ## Common variables
@@ -104,7 +104,7 @@ PreBuild:
 ## Objects
 ##
 $(IntermediateDirectory)/orb_extractor.cpp$(ObjectSuffix): orb_extractor.cpp $(IntermediateDirectory)/orb_extractor.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/stylix/Dropbox/MyDocument/SokendaiCourse/Researches/Workspace/code/lib/orb/orb_extractor.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/orb_extractor.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "${HOME}/webstylix/code/lib/orb/orb_extractor.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/orb_extractor.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/orb_extractor.cpp$(DependSuffix): orb_extractor.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/orb_extractor.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/orb_extractor.cpp$(DependSuffix) -MM "orb_extractor.cpp"
 
