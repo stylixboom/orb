@@ -28,7 +28,7 @@
 using namespace std;
 using namespace cv;
 using namespace alphautils;
-using namespace alphautils::imtools;
+//using namespace alphautils::imtools;
 
 orb::orb(int Colorspace, bool isNormalizePt, bool isCheckFile)
 {
@@ -42,6 +42,7 @@ orb::~orb(void)
 
 void orb::init(int Colorspace, bool isNormalizePt, bool isCheckFile)
 {
+	colorspace = Colorspace;
 	normalize_pt = isNormalizePt;
 	check_file_exist = isCheckFile;
 	num_kp = 0;
@@ -360,17 +361,18 @@ int orb::extract(const Mat& imgMat)
 	reset();
 
 	//Mat imgMat = imread(image_filename);
-	Mat image(imgMat.rows, imgMat.cols, CV_32FC1, Scalar(0)); // float 1 channel
+	Mat image(imgMat.rows, imgMat.cols, CV_8UC1, Scalar(0)); // uchar 1 channel
 
-	float *out = image.ptr<float>(0);
+	uchar* out = (uchar*)image.data;
 
     // Make gray scale by (b+g+r)/3
     if (colorspace == RGB_SPACE)
     {
-        const uchar *in = imgMat.ptr<uchar>(0);
+		//cout << "GRAY" << endl;
+        const uchar* in = (uchar*)imgMat.data;
         for (size_t i = imgMat.rows * imgMat.cols; i > 0; i--)
         {
-            *out = (float(in[0]) + in[1] + in[2]) / 3.0f;
+            *out = uchar((in[0] + in[1] + in[2]) / 3.0f);
             out++;
             in += 3;
         }
@@ -379,13 +381,14 @@ int orb::extract(const Mat& imgMat)
     // http://docs.opencv.org/modules/imgproc/doc/miscellaneous_transformations.html
     else if (colorspace == IRGB_SPACE)
     {
+		//cout << "IRGB" << endl;
         //Mat tmp_gray(imgMat.rows, imgMat.cols, CV_8UC1, Scalar(0));
         //cvtColor(imgMat, tmp_gray, CV_BGR2GRAY);
-        const uchar *in = imgMat.ptr<uchar>(0);
+        const uchar* in = (uchar*)imgMat.data;
         //const uchar *in = tmp_gray.ptr<uchar>(0);
         for (size_t i = imgMat.rows * imgMat.cols; i > 0; i--)
         {
-            *out = 0.2989f * in[2] + 0.5870f * in[1] + 0.1140f * in[0];
+            *out = uchar(0.2989f * in[2] + 0.5870f * in[1] + 0.1140f * in[0]);
             //*out = float(in[0]);
             out++;
             in += 3;
@@ -395,13 +398,14 @@ int orb::extract(const Mat& imgMat)
     // Make gray from L channel from OpenCV Lab
     else
     {
+		//cout << "LAB" << endl;
         //Convert BGR to LAB
         Mat tmp_lab(imgMat.rows, imgMat.cols, CV_8UC3, Scalar(0, 0, 0));
-        cvtColor(imgMat, tmp_lab, CV_BGR2Lab);
-        const uchar *in = tmp_lab.ptr<uchar>(0);
+        cvtColor(imgMat, tmp_lab, CV_BGR2Lab);		
+        const uchar* in = (uchar*)tmp_lab.data;
         for (size_t i = imgMat.rows * imgMat.cols; i > 0; i--)
         {
-            *out = float(in[0]);
+            *out = uchar(in[0]);
             //uchar Lv, av, bv;
             //rgb2lab(in[0], in[1], in[2], Lv, av, bv);
             //*out = float(Lv);
@@ -471,12 +475,13 @@ int orb::extract(const Mat& imgMat)
 		// Descriptors
 		for (int byte_idx = 0; byte_idx < ORB_BYTE; byte_idx++)		// 0-31
 		{
-			int full_bit_idx;
+			uchar src_byte = cv_descriptors_ptr[kp_idx * ORB_BYTE + byte_idx];
+			size_t target_bit_idx;
 			for (int sub_bit_idx = 0; sub_bit_idx < BIT_PER_BYTE; sub_bit_idx++)	// 0-7
 			{
-				full_bit_idx = (byte_idx * BIT_PER_BYTE) + sub_bit_idx;
 				// Copying each of D-bit to each of a descriptor dimension.
-				curr_desc[full_bit_idx] = cv_descriptors_ptr[kp_idx * ORB_D + full_bit_idx];
+				target_bit_idx = (byte_idx * BIT_PER_BYTE) + sub_bit_idx;
+				curr_desc[target_bit_idx] = bool(src_byte & (1 << sub_bit_idx));
 			}
 		}
 	}
