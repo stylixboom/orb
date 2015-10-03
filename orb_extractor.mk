@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Siriwat Kasamwattanarote
-Date                   :=02/10/15
+Date                   :=03/10/15
 CodeLitePath           :="/home/stylix/Dropbox/MyDocument/SokendaiCourse/Researches/Workspace/configurations/.codelite"
 LinkerName             :=g++
 SharedObjectLinkerName :=g++ -shared -fPIC
@@ -72,11 +72,23 @@ Objects=$(Objects0)
 .PHONY: all clean PreBuild PrePreBuild PostBuild MakeIntermediateDirs
 all: $(OutputFile)
 
-$(OutputFile): $(IntermediateDirectory)/.d $(Objects) 
+$(OutputFile): $(IntermediateDirectory)/.d "../../.build-release/orb" "../../.build-release/alphautils" $(Objects) 
 	@$(MakeDirCommand) $(@D)
 	@echo "" > $(IntermediateDirectory)/.d
 	@echo $(Objects0)  > $(ObjectsFileList)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
+
+"../../.build-release/orb":
+	@$(MakeDirCommand) "../../.build-release"
+	@echo stam > "../../.build-release/orb"
+
+
+"../../.build-release/alphautils":
+	@$(MakeDirCommand) "../../.build-release"
+	@echo stam > "../../.build-release/alphautils"
+
+
+
 
 MakeIntermediateDirs:
 	@test -d ./Release || $(MakeDirCommand) ./Release
