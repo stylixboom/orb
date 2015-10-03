@@ -78,8 +78,10 @@ int main(int argc,char *argv[])
                 if (isBinary)
                 {
                     output_overlay_image = input_image + "_overlay.png";
-                    if(argv[count + 1][0] == 'p')
+                    if (argv[count + 1][0] == 'p')
                         draw_mode = DRAW_POINT;
+					else if (argv[count + 1][0] == 'c')
+						draw_mode = DRAW_CIRCLE;
                 }
                 break;
             case 'c':
