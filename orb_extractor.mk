@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Siriwat Kasamwattanarote
-Date                   :=03/10/15
+Date                   :=04/10/15
 CodeLitePath           :="${HOME}/webstylix/configurations/.codelite"
 LinkerName             :=g++
 SharedObjectLinkerName :=g++ -shared -fPIC
@@ -50,7 +50,7 @@ LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)${HOME}/loca
 AR       := ar rcu
 CXX      := g++
 CC       := gcc
-CXXFLAGS :=  -O3 -std=c++11 -Wall $(Preprocessors)
+CXXFLAGS :=  -O3 -fopenmp -std=c++11 -Wall $(Preprocessors)
 CFLAGS   :=  -O2 -Wall $(Preprocessors)
 ASFLAGS  := 
 AS       := as
@@ -72,23 +72,11 @@ Objects=$(Objects0)
 .PHONY: all clean PreBuild PrePreBuild PostBuild MakeIntermediateDirs
 all: $(OutputFile)
 
-$(OutputFile): $(IntermediateDirectory)/.d "../../.build-release/orb" "../../.build-release/alphautils" $(Objects) 
+$(OutputFile): $(IntermediateDirectory)/.d $(Objects) 
 	@$(MakeDirCommand) $(@D)
 	@echo "" > $(IntermediateDirectory)/.d
 	@echo $(Objects0)  > $(ObjectsFileList)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
-
-"../../.build-release/orb":
-	@$(MakeDirCommand) "../../.build-release"
-	@echo stam > "../../.build-release/orb"
-
-
-"../../.build-release/alphautils":
-	@$(MakeDirCommand) "../../.build-release"
-	@echo stam > "../../.build-release/alphautils"
-
-
-
 
 MakeIntermediateDirs:
 	@test -d ./Release || $(MakeDirCommand) ./Release

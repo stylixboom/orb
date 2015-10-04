@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Siriwat Kasamwattanarote
-Date                   :=03/10/15
+Date                   :=04/10/15
 CodeLitePath           :="${HOME}/webstylix/configurations/.codelite"
 LinkerName             :=g++
 SharedObjectLinkerName :=g++ -shared -fPIC
@@ -50,7 +50,7 @@ LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)${HOME}/loca
 AR       := ar rcu
 CXX      := g++
 CC       := gcc
-CXXFLAGS :=  -O3 -std=c++11 $(Preprocessors)
+CXXFLAGS :=  -O3 -fopenmp -std=c++11 $(Preprocessors)
 CFLAGS   :=   $(Preprocessors)
 ASFLAGS  := 
 AS       := as
