@@ -27,10 +27,10 @@ using namespace alphautils::imtools;
 class orb
 {
 	// Default parameters of ORB
-	int nfeatures=900;			// 900
+	int nfeatures=2000;			// 900
 	float scaleFactor=1.2f;		// 4
 	int nlevels=8;				//
-	int edgeThreshold=15; // Changed default (31);
+	int edgeThreshold=15; 		// Changed default (31);
 	int firstLevel=0;
 	int WTA_K=2;
 	int scoreType=ORB::HARRIS_SCORE;
