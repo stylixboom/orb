@@ -426,10 +426,11 @@ int orb::extract(const Mat& imgMat)
     firstLevel,
     WTA_K,
     scoreType,
-    patchSize );
+    patchSize);
 	
 	// ORB keypoint extraction
-	orb_obj->detect(image, cv_keypoints);
+	//orb_obj->detect(image, cv_keypoints);
+	FAST(image, cv_keypoints, fastThreshold, true);
 	// ORB feature description
 	orb_obj->compute(image, cv_keypoints, cv_descriptors);
 
